@@ -2,7 +2,7 @@
 
 This repository contains implementations for multiple technical assignments demonstrating full-stack development, automation testing, and machine learning capabilities.
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 .
@@ -16,7 +16,7 @@ This repository contains implementations for multiple technical assignments demo
 
 ---
 
-## 🛒 Assignment 1: Ecommerce Store API
+##  Assignment 1: Ecommerce Store API
 
 ### Overview
 An ecommerce store backend with cart management, checkout functionality, and dynamic discount code generation.
@@ -97,16 +97,16 @@ curl http://localhost:3000/admin/stats
 - Only one active unused discount can exist at a time
 
 ### Test Coverage
-- ✅ Add items to cart and retrieve
-- ✅ Checkout without discount
-- ✅ Discount generation validation
-- ✅ Discount application and single-use enforcement
-- ✅ Admin statistics tracking
-- ✅ Rules engine evaluation
+-  Add items to cart and retrieve
+-  Checkout without discount
+-  Discount generation validation
+-  Discount application and single-use enforcement
+-  Admin statistics tracking
+-  Rules engine evaluation
 
 ---
 
-## 🤖 Assignment 2: Automation Testing
+##  Assignment 2: Automation Testing
 
 End-to-end automation tests for the ecommerce application.
 
@@ -130,7 +130,7 @@ For detailed instructions, see [automation/README.md](automation/README.md).
 
 ---
 
-## 🧠 Assignment 3: Machine Learning - Insurance Enrollment Prediction
+##  Assignment 3: Machine Learning - Insurance Enrollment Prediction
 
 A machine learning pipeline to predict employee enrollment in voluntary insurance products.
 
@@ -183,13 +183,13 @@ For detailed analysis, see:
 
 ---
 
-## 📊 Project Statistics
+##  Project Statistics
 
 ### Code Quality
-- ✅ Modular, maintainable code structure
-- ✅ Comprehensive error handling
-- ✅ Clear separation of concerns
-- ✅ Well-documented APIs and functions
+-  Modular, maintainable code structure
+-  Comprehensive error handling
+-  Clear separation of concerns
+-  Well-documented APIs and functions
 
 ### Testing
 - **Unit Tests**: 7 tests (Jest) - All passing
@@ -197,14 +197,14 @@ For detailed analysis, see:
 - **ML Tests**: 1 pipeline test (pytest) - Passing
 
 ### Documentation
-- ✅ Main README (this file)
-- ✅ ML assignment README and report
-- ✅ Automation testing README
-- ✅ Code comments throughout
+-  Main README (this file)
+-  ML assignment README and report
+-  Automation testing README
+-  Code comments throughout
 
 ---
 
-## 🚀 Development Workflow
+##  Development Workflow
 
 ### Running All Tests
 ```bash
@@ -226,31 +226,31 @@ npm run dev
 
 ---
 
-## 📝 Assignment Requirements Checklist
+##  Assignment Requirements Checklist
 
 ### Ecommerce Assignment
-- ✅ Functional cart and checkout APIs
-- ✅ Discount code generation and validation
-- ✅ Admin statistics API
-- ✅ In-memory storage
-- ✅ Unit tests with Jest
-- ✅ Code quality and comments
-- ✅ README documentation
+-  Functional cart and checkout APIs
+-  Discount code generation and validation
+-  Admin statistics API
+-  In-memory storage
+-  Unit tests with Jest
+-  Code quality and comments
+-  README documentation
 
 ### Automation Assignment
-- ✅ Functional test automation
-- ✅ Playwright framework
-- ✅ Code quality
-- ✅ Documentation
+-  Functional test automation
+-  Playwright framework
+-  Code quality
+-  Documentation
 
 ### ML Assignment
-- ✅ Data processing pipeline
-- ✅ Model development and training
-- ✅ Functional code with tests
-- ✅ Evaluation metrics
-- ✅ requirements.txt
-- ✅ README with clear instructions
-- ✅ Comprehensive report with findings
+-  Data processing pipeline
+-  Model development and training
+-  Functional code with tests
+-  Evaluation metrics
+-  requirements.txt
+-  README with clear instructions
+-  Comprehensive report with findings
 
 ---
 
@@ -280,7 +280,7 @@ pip install -r ml/requirements.txt
 
 ---
 
-## 📦 Dependencies
+##  Dependencies
 
 ### Node.js
 - express: Web framework
@@ -298,7 +298,8 @@ pip install -r ml/requirements.txt
 
 ---
 
-## 👤 Author
+##  Author
+
 
 Assignment completion demonstrating:
 - Backend API development
@@ -309,6 +310,6 @@ Assignment completion demonstrating:
 
 ---
 
-## 📄 License
+##  License
 
 This is an assignment submission for evaluation purposes.
