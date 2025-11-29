@@ -1,20 +1,8 @@
-/**
- * E-Commerce Store Frontend Application
- *
- * This JavaScript file handles all frontend interactions including:
- * - Product display and cart management
- * - Checkout with discount code support
- * - Order history tracking
- * - Admin panel for statistics and discount generation
- */
 
-// Configuration - API base URL
-// If opened from file:// protocol, use localhost:3000; otherwise use current origin
 const API_BASE = window.location.protocol === 'file:'
     ? 'http://localhost:3000'
     : window.location.origin;
 
-// Generate or retrieve user ID from localStorage
 function getUserId() {
     let userId = localStorage.getItem('ecommerce_user_id');
     if (!userId) {
@@ -24,10 +12,8 @@ function getUserId() {
     return userId;
 }
 
-// Current user ID - persisted across sessions
 let USER_ID = getUserId();
 
-// Sample products data (in real app, would come from API)
 const PRODUCTS = [
     { id: 'prod-1', name: 'Wireless Headphones', price: 79.99, description: 'High-quality wireless headphones with noise cancellation' },
     { id: 'prod-2', name: 'Smart Watch', price: 199.99, description: 'Feature-rich smartwatch with health tracking' },
@@ -43,7 +29,6 @@ let orders = [];
 let appliedDiscount = null;
 let orderCount = 0;
 
-// DOM Elements
 const productsGrid = document.getElementById('products-grid');
 const cartItems = document.getElementById('cart-items');
 const cartCount = document.getElementById('cart-count');
@@ -57,11 +42,8 @@ const ordersList = document.getElementById('orders-list');
 const statsPanel = document.getElementById('stats-panel');
 const discountCodesList = document.getElementById('discount-codes-list');
 
-/**
- * Initialize the application
- */
+
 async function init() {
-    // Display current user ID
     document.getElementById('user-id-display').textContent = USER_ID;
 
     renderProducts();
@@ -69,9 +51,6 @@ async function init() {
     await loadStats();
 }
 
-/**
- * Change user ID - allows switching between users
- */
 function changeUserId() {
     const newId = prompt('Enter new User ID:', USER_ID);
     if (newId && newId.trim()) {
@@ -79,7 +58,6 @@ function changeUserId() {
         localStorage.setItem('ecommerce_user_id', USER_ID);
         document.getElementById('user-id-display').textContent = USER_ID;
 
-        // Reload cart for new user
         cart = [];
         orders = [];
         appliedDiscount = null;
@@ -90,9 +68,7 @@ function changeUserId() {
     }
 }
 
-/**
- * Render product cards
- */
+
 function renderProducts() {
     productsGrid.innerHTML = PRODUCTS.map(product => `
         <div class="product-card">
@@ -111,18 +87,14 @@ function renderProducts() {
     `).join('');
 }
 
-/**
- * Change quantity in product card
- */
+
 function changeQuantity(productId, delta) {
     const input = document.getElementById(`qty-${productId}`);
     const newValue = Math.max(1, Math.min(99, parseInt(input.value) + delta));
     input.value = newValue;
 }
 
-/**
- * Add item to cart via API
- */
+
 async function addToCart(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     const quantity = parseInt(document.getElementById(`qty-${productId}`).value);
@@ -145,7 +117,6 @@ async function addToCart(productId) {
         renderCart();
         showToast(`Added ${quantity}x ${product.name} to cart`, 'success');
 
-        // Reset quantity
         document.getElementById(`qty-${productId}`).value = 1;
     } catch (error) {
         showToast('Failed to add item to cart', 'error');
@@ -153,9 +124,7 @@ async function addToCart(productId) {
     }
 }
 
-/**
- * Load cart from API
- */
+
 async function loadCart() {
     try {
         const response = await fetch(`${API_BASE}/cart/${USER_ID}`);
@@ -167,9 +136,7 @@ async function loadCart() {
     }
 }
 
-/**
- * Render cart items
- */
+
 function renderCart() {
     cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -200,9 +167,7 @@ function renderCart() {
     cartSummary.style.display = 'block';
 }
 
-/**
- * Update cart summary totals
- */
+
 function updateCartSummary() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     cartSubtotal.textContent = `$${subtotal.toFixed(2)}`;
@@ -218,9 +183,7 @@ function updateCartSummary() {
     }
 }
 
-/**
- * Update item quantity via API
- */
+
 async function updateQuantity(itemId, quantity) {
     quantity = parseInt(quantity);
     if (quantity < 1) return removeFromCart(itemId);
@@ -243,9 +206,7 @@ async function updateQuantity(itemId, quantity) {
     }
 }
 
-/**
- * Remove item from cart via API
- */
+
 async function removeFromCart(itemId) {
     try {
         const response = await fetch(`${API_BASE}/cart/${USER_ID}/items/${itemId}`, {
@@ -264,9 +225,7 @@ async function removeFromCart(itemId) {
     }
 }
 
-/**
- * Apply discount code
- */
+
 function applyDiscount() {
     const code = discountCodeInput.value.trim();
     if (!code) {
@@ -279,9 +238,7 @@ function applyDiscount() {
     showToast('Discount code applied! Will be validated at checkout.', 'success');
 }
 
-/**
- * Process checkout via API
- */
+
 async function checkout() {
     if (cart.length === 0) {
         showToast('Your cart is empty', 'error');
@@ -330,9 +287,7 @@ async function checkout() {
     }
 }
 
-/**
- * Render order history
- */
+
 function renderOrders() {
     if (orders.length === 0) {
         ordersList.innerHTML = '<p class="no-orders">No orders yet</p>';
@@ -366,9 +321,7 @@ function renderOrders() {
     `).join('');
 }
 
-/**
- * Load store statistics
- */
+
 async function loadStats() {
     try {
         const response = await fetch(`${API_BASE}/admin/stats`);
@@ -378,17 +331,14 @@ async function loadStats() {
         document.getElementById('stat-revenue').textContent = `$${stats.totalPurchaseAmount.toFixed(2)}`;
         document.getElementById('stat-discounts').textContent = `$${stats.totalDiscountAmount.toFixed(2)}`;
 
-        // Calculate order count for discount eligibility display
         orderCount = Math.floor(stats.itemsPurchasedCount > 0 ?
             (stats.discountCodes.length * 3) + (stats.discountCodes.some(d => !d.used) ? 0 :
                 (stats.itemsPurchasedCount % 3 === 0 ? 3 : stats.itemsPurchasedCount % 3)) : 0);
 
-        // Show actual orders from discount generation points
         const ordersFromDiscounts = stats.discountCodes.length * 3;
         document.getElementById('stat-orders').textContent = ordersFromDiscounts ||
             (stats.itemsPurchasedCount > 0 ? '~' + Math.ceil(stats.itemsPurchasedCount / 2) : '0');
 
-        // Render discount codes
         if (stats.discountCodes.length === 0) {
             discountCodesList.innerHTML = '<li>No discount codes generated yet</li>';
         } else {
@@ -406,9 +356,7 @@ async function loadStats() {
     }
 }
 
-/**
- * Generate discount code (admin action)
- */
+
 async function generateDiscount() {
     try {
         const response = await fetch(`${API_BASE}/admin/discounts/generate`, {
@@ -433,9 +381,7 @@ async function generateDiscount() {
     }
 }
 
-/**
- * Reset store (admin action)
- */
+
 async function resetStore() {
     if (!confirm('Are you sure you want to reset all store data? This will clear all carts, orders, and discount codes.')) {
         return;
@@ -460,9 +406,7 @@ async function resetStore() {
     }
 }
 
-/**
- * Show toast notification
- */
+
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -473,5 +417,4 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
