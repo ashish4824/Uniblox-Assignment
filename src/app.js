@@ -1,8 +1,18 @@
 const express = require('express')
-const { addToCart, getCart, checkout, canGenerateDiscount, generateDiscount, stats, reset } = require('./store')
+const path = require('path')
+const cors = require('cors')
+const { addToCart, getCart, removeFromCart, updateCartItem, checkout, canGenerateDiscount, generateDiscount, stats, reset } = require('./store')
 
 const app = express()
+
+// Enable CORS for all origins (development)
+app.use(cors())
+
+// Parse JSON bodies
 app.use(express.json())
+
+// Serve static files for the UI
+app.use(express.static(path.join(__dirname, '../public')))
 
 app.post('/cart/:userId/items', (req, res) => {
   try {
@@ -17,6 +27,27 @@ app.post('/cart/:userId/items', (req, res) => {
 app.get('/cart/:userId', (req, res) => {
   const cart = getCart(req.params.userId)
   res.json({ cart })
+})
+
+app.delete('/cart/:userId/items/:itemId', (req, res) => {
+  try {
+    const cart = removeFromCart(req.params.userId, req.params.itemId)
+    res.json({ cart })
+  } catch (e) {
+    if (e.message === 'item_not_found') return res.status(404).json({ error: 'item_not_found' })
+    res.status(500).json({ error: 'server_error' })
+  }
+})
+
+app.patch('/cart/:userId/items/:itemId', (req, res) => {
+  try {
+    const cart = updateCartItem(req.params.userId, req.params.itemId, req.body)
+    res.json({ cart })
+  } catch (e) {
+    if (e.message === 'item_not_found') return res.status(404).json({ error: 'item_not_found' })
+    if (e.message === 'invalid_quantity') return res.status(400).json({ error: 'invalid_quantity' })
+    res.status(500).json({ error: 'server_error' })
+  }
 })
 
 app.post('/checkout/:userId', (req, res) => {

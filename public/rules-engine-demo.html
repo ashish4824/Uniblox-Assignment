@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rules Engine Editor - Interactive Wireframe</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            min-height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-right: 1px solid var(--gray-200);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .rule-list {
+            list-style: none;
+        }
+
+        .rule-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+
+        .rule-item:hover {
+            background: var(--gray-50);
+        }
+
+        .rule-item.active {
+            background: #eef2ff;
+            border: 1px solid var(--primary);
+        }
+
+        .rule-item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .rule-item-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active { background: var(--success); }
+        .status-dot.draft { background: var(--warning); }
+
+        /* Main Content */
+        .main {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Condition Builder */
+        .condition-group {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .condition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .condition-label {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .condition-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .condition-row select, .condition-row input {
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .condition-row select {
+            min-width: 120px;
+        }
+
+        .condition-row input {
+            width: 100px;
+        }
+
+        .operator-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Action Section */
+        .action-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .action-section.else {
+            background: #fef3c7;
+            border-color: #fcd34d;
+        }
+
+        .action-label {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 12px;
+        }
+
+        .action-section.else .action-label {
+            color: var(--warning);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .btn-icon:hover {
+            color: var(--danger);
+        }
+
+        /* Right Panel - Preview */
+        .preview-panel {
+            background: white;
+            border-left: 1px solid var(--gray-200);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 12px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--gray-500);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Decision Tree */
+        .tree {
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .tree-node {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .tree-start {
+            background: var(--gray-100);
+            border: 2px solid var(--gray-300);
+        }
+
+        .tree-decision {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+
+        .tree-approve {
+            background: #d1fae5;
+            border: 2px solid var(--success);
+        }
+
+        .tree-decline {
+            background: #fee2e2;
+            border: 2px solid var(--danger);
+        }
+
+        .tree-connector {
+            color: var(--gray-500);
+            margin-left: 20px;
+        }
+
+        /* Test Panel */
+        .test-section {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .test-result {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .test-result.pass {
+            background: #d1fae5;
+            border: 1px solid var(--success);
+        }
+
+        .test-result.fail {
+            background: #fee2e2;
+            border: 1px solid var(--danger);
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .result-badge.approved {
+            background: var(--success);
+            color: white;
+        }
+
+        .result-badge.declined {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Chips */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--gray-100);
+            border-radius: 16px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        .chip-remove {
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .chip-remove:hover {
+            color: var(--danger);
+        }
+
+        /* State Selector */
+        .state-selector {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .state-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            padding: 4px;
+        }
+
+        .state-checkbox input {
+            cursor: pointer;
+        }
+
+        .state-checkbox.selected {
+            background: #dbeafe;
+            border-radius: 4px;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .info-icon {
+            color: #3b82f6;
+        }
+
+        /* Evaluation Path */
+        .eval-path {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .eval-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .eval-step.pass::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .eval-step.fail::before {
+            content: '✗';
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        /* Add condition button */
+        .add-condition {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .add-condition:hover {
+            background: var(--gray-50);
+        }
+
+        /* Demo Notice */
+        .demo-notice {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-notice">
+        Interactive Wireframe Demo - Rules Engine Editor for Insurance Underwriters
+    </div>
+
+    <header class="header">
+        <div class="logo">Rules Engine</div>
+        <div class="header-actions">
+            <button class="btn btn-secondary">Help</button>
+            <button class="btn btn-primary">+ Create Rule</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Active Rules</div>
+                <ul class="rule-list">
+                    <li class="rule-item active" onclick="showRule('applicant')">
+                        <div class="rule-item-name">Applicant Type & Products</div>
+                        <div class="rule-item-status">
+                            <span class="status-dot active"></span> Active
+                        </div>
+                    </li>
+                    <li class="rule-item" onclick="showRule('age')">
+                        <div class="rule-item-name">Age-Based Eligibility</div>
+                        <div class="rule-item-status">
+                            <span class="status-dot active"></span> Active
+                        </div>
+                    </li>
+                    <li class="rule-item" onclick="showRule('bmi')">
+                        <div class="rule-item-name">BMI Assessment</div>
+                        <div class="rule-item-status">
+                            <span class="status-dot active"></span> Active
+                        </div>
+                    </li>
+                    <li class="rule-item" onclick="showRule('state')">
+                        <div class="rule-item-name">State Gender Options</div>
+                        <div class="rule-item-status">
+                            <span class="status-dot active"></span> Active
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Draft Rules</div>
+                <ul class="rule-list">
+                    <li class="rule-item">
+                        <div class="rule-item-name">Income Verification</div>
+                        <div class="rule-item-status">
+                            <span class="status-dot draft"></span> Draft
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Rule 1: Applicant Type -->
+            <div id="rule-applicant" class="rule-content">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Rule Details</span>
+                        <button class="btn btn-secondary btn-sm">Duplicate</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-input" value="Applicant Type & Product Assignment">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-input" value="Assign products based on whether applicant is Employee or Spouse">
+                        </div>
+                        <div style="display: flex; gap: 24px;">
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" style="width: auto;">
+                                    <option selected>Active</option>
+                                    <option>Draft</option>
+                                    <option>Disabled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <input type="number" class="form-input" value="1" style="width: 80px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Conditions</span>
+                        <button class="btn btn-secondary btn-sm">+ Add Condition</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="condition-group">
+                            <div class="condition-header">
+                                <span class="condition-label">IF</span>
+                            </div>
+                            <div class="condition-row">
+                                <select>
+                                    <option selected>role</option>
+                                    <option>age</option>
+                                    <option>state</option>
+                                </select>
+                                <select>
+                                    <option selected>equals</option>
+                                    <option>not equals</option>
+                                    <option>is in</option>
+                                </select>
+                                <select>
+                                    <option selected>Employee</option>
+                                    <option>Spouse</option>
+                                </select>
+                                <button class="btn-icon">×</button>
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <div class="action-label">THEN</div>
+                            <div class="condition-row">
+                                <select>
+                                    <option selected>Show Products</option>
+                                    <option>Set Decision</option>
+                                    <option>Set Gender Options</option>
+                                </select>
+                                <div>
+                                    <span class="chip">Alpha <span class="chip-remove">×</span></span>
+                                    <span class="chip">Beta <span class="chip-remove">×</span></span>
+                                    <span class="chip">Gamma <span class="chip-remove">×</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-section else">
+                            <div class="action-label">ELSE (if Spouse)</div>
+                            <div class="condition-row">
+                                <select>
+                                    <option selected>Show Products</option>
+                                    <option>Set Decision</option>
+                                </select>
+                                <div>
+                                    <span class="chip">Delta <span class="chip-remove">×</span></span>
+                                    <span class="chip">Epsilon <span class="chip-remove">×</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button class="btn btn-secondary">Cancel</button>
+                    <button class="btn btn-secondary">Save Draft</button>
+                    <button class="btn btn-success">Publish</button>
+                </div>
+            </div>
+
+            <!-- Rule 2: Age-Based -->
+            <div id="rule-age" class="rule-content" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Rule Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-input" value="Age-Based Eligibility">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-input" value="Decline applications based on age limits for Employee (>80) and Spouse (>70)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Conditions</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="condition-group">
+                            <div class="condition-header">
+                                <span class="condition-label">IF</span>
+                            </div>
+
+                            <!-- Condition Group 1 -->
+                            <div style="border: 1px dashed var(--gray-300); padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">Condition Group (ALL must match)</div>
+                                <div class="condition-row">
+                                    <select><option selected>role</option></select>
+                                    <select><option selected>equals</option></select>
+                                    <select><option selected>Employee</option></select>
+                                    <button class="btn-icon">×</button>
+                                </div>
+                                <div style="margin: 8px 0;"><span class="operator-badge">AND</span></div>
+                                <div class="condition-row">
+                                    <select><option selected>age</option></select>
+                                    <select><option selected>></option></select>
+                                    <input type="number" value="80">
+                                    <button class="btn-icon">×</button>
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin: 12px 0;"><span class="operator-badge">OR</span></div>
+
+                            <!-- Condition Group 2 -->
+                            <div style="border: 1px dashed var(--gray-300); padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">Condition Group (ALL must match)</div>
+                                <div class="condition-row">
+                                    <select><option selected>role</option></select>
+                                    <select><option selected>equals</option></select>
+                                    <select><option selected>Spouse</option></select>
+                                    <button class="btn-icon">×</button>
+                                </div>
+                                <div style="margin: 8px 0;"><span class="operator-badge">AND</span></div>
+                                <div class="condition-row">
+                                    <select><option selected>age</option></select>
+                                    <select><option selected>></option></select>
+                                    <input type="number" value="70">
+                                    <button class="btn-icon">×</button>
+                                </div>
+                            </div>
+
+                            <div class="add-condition" style="margin-top: 12px;">+ Add Condition Group</div>
+                        </div>
+
+                        <div class="action-section" style="background: #fee2e2; border-color: #fca5a5;">
+                            <div class="action-label" style="color: var(--danger);">THEN</div>
+                            <div class="condition-row">
+                                <select><option selected>Set Decision</option></select>
+                                <select>
+                                    <option>approve</option>
+                                    <option selected>decline</option>
+                                    <option>pending</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rule 3: BMI -->
+            <div id="rule-bmi" class="rule-content" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Rule Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-input" value="BMI Assessment">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Conditions</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box">
+                            <span class="info-icon">ℹ️</span>
+                            <div>
+                                <strong>BMI Calculation:</strong> Automatically calculated from Height and Weight<br>
+                                Formula: weight(kg) / (height(m))²
+                            </div>
+                        </div>
+
+                        <div class="condition-group">
+                            <div class="condition-header">
+                                <span class="condition-label">IF</span>
+                            </div>
+                            <div class="condition-row">
+                                <select>
+                                    <option>age</option>
+                                    <option selected>calculated.BMI</option>
+                                    <option>salary</option>
+                                </select>
+                                <select>
+                                    <option selected>></option>
+                                    <option><</option>
+                                    <option>=</option>
+                                </select>
+                                <input type="number" value="20">
+                                <button class="btn-icon">×</button>
+                            </div>
+                        </div>
+
+                        <div class="action-section" style="background: #fee2e2; border-color: #fca5a5;">
+                            <div class="action-label" style="color: var(--danger);">THEN</div>
+                            <div class="condition-row">
+                                <select><option selected>Set Decision</option></select>
+                                <select><option selected>decline</option></select>
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <div class="action-label">ELSE</div>
+                            <div class="condition-row">
+                                <select><option selected>Set Decision</option></select>
+                                <select><option selected>approve</option></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rule 4: State Gender -->
+            <div id="rule-state" class="rule-content" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Rule Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-input" value="State-Based Gender Options">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Conditions</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="condition-group">
+                            <div class="condition-header">
+                                <span class="condition-label">IF</span>
+                            </div>
+                            <div class="condition-row">
+                                <select>
+                                    <option selected>address.state</option>
+                                    <option>role</option>
+                                </select>
+                                <select>
+                                    <option selected>is in</option>
+                                    <option>is not in</option>
+                                </select>
+                                <div>Select states...</div>
+                            </div>
+
+                            <div style="margin-top: 12px;">
+                                <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 8px;">Selected States:</div>
+                                <div>
+                                    <span class="chip" style="background: #dbeafe;">NJ <span class="chip-remove">×</span></span>
+                                    <span class="chip" style="background: #dbeafe;">FL <span class="chip-remove">×</span></span>
+                                    <span class="chip" style="background: #dbeafe;">WA <span class="chip-remove">×</span></span>
+                                    <span class="chip" style="background: #dbeafe;">KS <span class="chip-remove">×</span></span>
+                                    <span class="chip" style="background: #dbeafe;">NY <span class="chip-remove">×</span></span>
+                                </div>
+                            </div>
+
+                            <div class="state-selector" style="margin-top: 12px; background: white; padding: 12px; border-radius: 6px;">
+                                <label class="state-checkbox"><input type="checkbox"> AL</label>
+                                <label class="state-checkbox"><input type="checkbox"> AK</label>
+                                <label class="state-checkbox"><input type="checkbox"> AZ</label>
+                                <label class="state-checkbox"><input type="checkbox"> CA</label>
+                                <label class="state-checkbox selected"><input type="checkbox" checked> FL</label>
+                                <label class="state-checkbox"><input type="checkbox"> GA</label>
+                                <label class="state-checkbox selected"><input type="checkbox" checked> KS</label>
+                                <label class="state-checkbox selected"><input type="checkbox" checked> NJ</label>
+                                <label class="state-checkbox selected"><input type="checkbox" checked> NY</label>
+                                <label class="state-checkbox"><input type="checkbox"> TX</label>
+                                <label class="state-checkbox selected"><input type="checkbox" checked> WA</label>
+                                <label class="state-checkbox"><input type="checkbox"> WI</label>
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <div class="action-label">THEN</div>
+                            <div class="condition-row">
+                                <select><option selected>Set Gender Options</option></select>
+                                <div>
+                                    <span class="chip">Male</span>
+                                    <span class="chip">Female</span>
+                                    <span class="chip" style="background: #dbeafe;">Nonbinary</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-section else">
+                            <div class="action-label">ELSE</div>
+                            <div class="condition-row">
+                                <select><option selected>Set Gender Options</option></select>
+                                <div>
+                                    <span class="chip">Male</span>
+                                    <span class="chip">Female</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Preview & Test -->
+        <aside class="preview-panel">
+            <div class="preview-title">Preview & Test</div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('tree')">Tree</div>
+                <div class="tab" onclick="showTab('test')">Test</div>
+            </div>
+
+            <!-- Tree View -->
+            <div id="tab-tree">
+                <div class="tree">
+                    <div class="tree-node tree-start">Start</div>
+                    <div class="tree-connector">│</div>
+                    <div class="tree-connector">▼</div>
+                    <div class="tree-node tree-decision">Role?</div>
+                    <div class="tree-connector">├── Employee ──▶ Alpha, Beta, Gamma</div>
+                    <div class="tree-connector">└── Spouse ────▶ Delta, Epsilon</div>
+                    <div class="tree-connector">│</div>
+                    <div class="tree-connector">▼</div>
+                    <div class="tree-node tree-decision">Age Check</div>
+                    <div class="tree-connector">├── Employee > 80?</div>
+                    <div class="tree-connector">│   ├── Yes ▶ <span class="tree-node tree-decline" style="padding: 2px 8px;">DECLINE</span></div>
+                    <div class="tree-connector">│   └── No ──▶ Continue</div>
+                    <div class="tree-connector">└── Spouse > 70?</div>
+                    <div class="tree-connector">    ├── Yes ▶ <span class="tree-node tree-decline" style="padding: 2px 8px;">DECLINE</span></div>
+                    <div class="tree-connector">    └── No ──▶ Continue</div>
+                    <div class="tree-connector">│</div>
+                    <div class="tree-connector">▼</div>
+                    <div class="tree-node tree-decision">BMI > 20?</div>
+                    <div class="tree-connector">├── Yes ▶ <span class="tree-node tree-decline" style="padding: 2px 8px;">DECLINE</span></div>
+                    <div class="tree-connector">└── No ──▶ <span class="tree-node tree-approve" style="padding: 2px 8px;">APPROVE</span></div>
+                </div>
+            </div>
+
+            <!-- Test View -->
+            <div id="tab-test" style="display: none;">
+                <div class="test-section">
+                    <div style="font-weight: 600; margin-bottom: 12px;">Test Data</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" id="test-role">
+                            <option selected>Employee</option>
+                            <option>Spouse</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Age</label>
+                        <input type="number" class="form-input" id="test-age" value="34">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Height (cm)</label>
+                        <input type="number" class="form-input" id="test-height" value="175">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" class="form-input" id="test-weight" value="60">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">State</label>
+                        <select class="form-select" id="test-state">
+                            <option>CA</option>
+                            <option>TX</option>
+                            <option selected>NY</option>
+                            <option>FL</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;" onclick="runTest()">Run Test</button>
+                </div>
+
+                <div class="test-result pass" id="test-result">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="result-badge approved">✓ APPROVED</span>
+                        <span style="font-size: 12px; color: var(--gray-500);">BMI: 19.6</span>
+                    </div>
+
+                    <div style="font-size: 13px; margin-bottom: 8px;"><strong>Products:</strong> Alpha, Beta, Gamma</div>
+                    <div style="font-size: 13px; margin-bottom: 8px;"><strong>Gender Options:</strong> Male, Female, Nonbinary</div>
+
+                    <div style="font-size: 13px; font-weight: 600; margin-top: 12px;">Evaluation Path:</div>
+                    <ul class="eval-path">
+                        <li class="eval-step pass">Role = Employee → Products assigned</li>
+                        <li class="eval-step pass">Age (34) ≤ 80 → Continue</li>
+                        <li class="eval-step pass">BMI (19.6) ≤ 20 → Approved</li>
+                        <li class="eval-step pass">State = NY → Nonbinary option added</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        function showRule(ruleName) {
+            // Hide all rule contents
+            document.querySelectorAll('.rule-content').forEach(el => {
+                el.style.display = 'none';
+            });
+            // Show selected rule
+            document.getElementById('rule-' + ruleName).style.display = 'block';
+
+            // Update active state in sidebar
+            document.querySelectorAll('.rule-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        function showTab(tabName) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Show/hide content
+            document.getElementById('tab-tree').style.display = tabName === 'tree' ? 'block' : 'none';
+            document.getElementById('tab-test').style.display = tabName === 'test' ? 'block' : 'none';
+        }
+
+        function runTest() {
+            const role = document.getElementById('test-role').value;
+            const age = parseInt(document.getElementById('test-age').value);
+            const height = parseInt(document.getElementById('test-height').value);
+            const weight = parseInt(document.getElementById('test-weight').value);
+            const state = document.getElementById('test-state').value;
+
+            const bmi = weight / Math.pow(height / 100, 2);
+            const specialStates = ['NJ', 'FL', 'WA', 'KS', 'NY'];
+
+            let decision = 'approved';
+            let products = role === 'Employee' ? ['Alpha', 'Beta', 'Gamma'] : ['Delta', 'Epsilon'];
+            let genderOptions = specialStates.includes(state) ?
+                ['Male', 'Female', 'Nonbinary'] : ['Male', 'Female'];
+
+            let steps = [];
+
+            // Check role
+            steps.push({ pass: true, text: `Role = ${role} → Products assigned` });
+
+            // Check age
+            if (role === 'Employee' && age > 80) {
+                decision = 'declined';
+                steps.push({ pass: false, text: `Age (${age}) > 80 → Declined` });
+            } else if (role === 'Spouse' && age > 70) {
+                decision = 'declined';
+                steps.push({ pass: false, text: `Age (${age}) > 70 → Declined` });
+            } else {
+                const limit = role === 'Employee' ? 80 : 70;
+                steps.push({ pass: true, text: `Age (${age}) ≤ ${limit} → Continue` });
+            }
+
+            // Check BMI if not already declined
+            if (decision !== 'declined') {
+                if (bmi > 20) {
+                    decision = 'declined';
+                    steps.push({ pass: false, text: `BMI (${bmi.toFixed(1)}) > 20 → Declined` });
+                } else {
+                    steps.push({ pass: true, text: `BMI (${bmi.toFixed(1)}) ≤ 20 → Approved` });
+                }
+            }
+
+            // Gender options
+            if (specialStates.includes(state)) {
+                steps.push({ pass: true, text: `State = ${state} → Nonbinary option added` });
+            } else {
+                steps.push({ pass: true, text: `State = ${state} → Standard options` });
+            }
+
+            // Update result
+            const resultEl = document.getElementById('test-result');
+            resultEl.className = decision === 'approved' ? 'test-result pass' : 'test-result fail';
+
+            resultEl.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="result-badge ${decision}">
+                        ${decision === 'approved' ? '✓ APPROVED' : '✗ DECLINED'}
+                    </span>
+                    <span style="font-size: 12px; color: var(--gray-500);">BMI: ${bmi.toFixed(1)}</span>
+                </div>
+
+                <div style="font-size: 13px; margin-bottom: 8px;"><strong>Products:</strong> ${products.join(', ')}</div>
+                <div style="font-size: 13px; margin-bottom: 8px;"><strong>Gender Options:</strong> ${genderOptions.join(', ')}</div>
+
+                <div style="font-size: 13px; font-weight: 600; margin-top: 12px;">Evaluation Path:</div>
+                <ul class="eval-path">
+                    ${steps.map(s => `<li class="eval-step ${s.pass ? 'pass' : 'fail'}">${s.text}</li>`).join('')}
+                </ul>
+            `;
+        }
+    </script>
+</body>
+</html>

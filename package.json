@@ -10,15 +10,18 @@
     "test:e2e": "playwright test -c automation/playwright.config.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.2",
     "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "@playwright/test": "^1.48.2"
+    "supertest": "^6.3.3"
   },
   "jest": {
-    "testPathIgnorePatterns": ["<rootDir>/automation/"]
+    "testPathIgnorePatterns": [
+      "<rootDir>/automation/"
+    ]
   }
 }

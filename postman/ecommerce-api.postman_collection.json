@@ -1,0 +1,718 @@
+{
+  "info": {
+    "_postman_id": "ecommerce-api-collection",
+    "name": "E-Commerce Store API",
+    "description": "Complete API collection for the E-Commerce Store assignment.\n\nThis collection includes:\n- Cart management (add, get, remove items)\n- Checkout with optional discount codes\n- Admin APIs for discount generation and statistics\n- Rules engine for insurance applicant evaluation\n\n## Getting Started\n1. Start the server: `npm start`\n2. Server runs on http://localhost:3000\n3. Use the requests in order for best results\n\n## Discount Logic\n- Every 3rd order makes a discount available\n- Discount codes are single-use (10% off)\n- Generate discount via Admin API after threshold is reached",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user1",
+      "type": "string"
+    },
+    {
+      "key": "discountCode",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Admin",
+      "description": "Administrative endpoints for managing the store",
+      "item": [
+        {
+          "name": "Reset Application State",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reset"]
+            },
+            "description": "Resets all application state including carts, orders, and discount codes. Use this to start fresh."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get Store Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stats"]
+            },
+            "description": "Returns store statistics including:\n- Total items purchased\n- Total purchase amount\n- Total discount amount\n- List of all discount codes and their usage status"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"itemsPurchasedCount\": 5,\n  \"totalPurchaseAmount\": 250.00,\n  \"totalDiscountAmount\": 10.00,\n  \"discountCodes\": [\n    { \"code\": \"CODE-ABC123\", \"used\": true }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate Discount Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('discountCode', jsonData.discount.code);",
+                  "    console.log('Discount code saved:', jsonData.discount.code);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/discounts/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "discounts", "generate"]
+            },
+            "description": "Generates a new discount code if the threshold is reached (every Nth order, default N=3).\n\n**Rules:**\n- Can only generate when order count reaches threshold\n- Only one unused discount can exist at a time\n- Discount is 10% off the entire order"
+          },
+          "response": [
+            {
+              "name": "Success - Discount Generated",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"discount\": {\n    \"code\": \"CODE-ABC12345\",\n    \"percentage\": 0.10,\n    \"used\": false,\n    \"generatedAtOrderCount\": 3\n  }\n}"
+            },
+            {
+              "name": "Error - Not Available",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"not_available\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "description": "Shopping cart management endpoints",
+      "item": [
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Alpha\",\n  \"price\": 99.99,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userId}}/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userId}}", "items"]
+            },
+            "description": "Adds an item to the user's cart.\n\n**Required fields:**\n- name: Product name (string)\n- price: Product price (positive number)\n- quantity: Quantity to add (positive integer)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"cart\": [\n    {\n      \"id\": \"abc-123\",\n      \"name\": \"Product Alpha\",\n      \"price\": 99.99,\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            {
+              "name": "Error - Invalid Item",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"invalid_item\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Second Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Beta\",\n  \"price\": 49.99,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userId}}/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userId}}", "items"]
+            },
+            "description": "Example: Add a second item to demonstrate cart with multiple items"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userId}}"]
+            },
+            "description": "Retrieves all items in the user's cart"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"cart\": [\n    {\n      \"id\": \"abc-123\",\n      \"name\": \"Product Alpha\",\n      \"price\": 99.99,\n      \"quantity\": 2\n    },\n    {\n      \"id\": \"def-456\",\n      \"name\": \"Product Beta\",\n      \"price\": 49.99,\n      \"quantity\": 1\n    }\n  ]\n}"
+            },
+            {
+              "name": "Empty Cart",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"cart\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userId}}/items/:itemId",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userId}}", "items", ":itemId"],
+              "variable": [
+                {
+                  "key": "itemId",
+                  "value": "item-id-here",
+                  "description": "The ID of the item to remove (get from cart response)"
+                }
+              ]
+            },
+            "description": "Removes a specific item from the cart by item ID"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"cart\": []\n}"
+            },
+            {
+              "name": "Error - Item Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"item_not_found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Item Quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{userId}}/items/:itemId",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{userId}}", "items", ":itemId"],
+              "variable": [
+                {
+                  "key": "itemId",
+                  "value": "item-id-here",
+                  "description": "The ID of the item to update"
+                }
+              ]
+            },
+            "description": "Updates the quantity of a specific item in the cart"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"cart\": [\n    {\n      \"id\": \"abc-123\",\n      \"name\": \"Product Alpha\",\n      \"price\": 99.99,\n      \"quantity\": 3\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "description": "Order checkout endpoints",
+      "item": [
+        {
+          "name": "Checkout (No Discount)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "{{userId}}"]
+            },
+            "description": "Processes checkout without a discount code"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"order\": {\n    \"id\": \"order-uuid\",\n    \"userId\": \"user1\",\n    \"items\": [...],\n    \"subtotal\": 249.97,\n    \"discount\": 0,\n    \"total\": 249.97,\n    \"codeUsed\": null,\n    \"createdAt\": 1699999999999\n  }\n}"
+            },
+            {
+              "name": "Error - Empty Cart",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"empty_cart\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Checkout (With Discount)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountCode\": \"{{discountCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "{{userId}}"]
+            },
+            "description": "Processes checkout with a discount code.\n\n**Note:** Use the discountCode variable which is automatically set when you generate a discount code.\n\nThe discount is 10% off the entire order."
+          },
+          "response": [
+            {
+              "name": "Success with Discount",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"order\": {\n    \"id\": \"order-uuid\",\n    \"userId\": \"user1\",\n    \"items\": [...],\n    \"subtotal\": 100.00,\n    \"discount\": 10.00,\n    \"total\": 90.00,\n    \"codeUsed\": \"CODE-ABC123\",\n    \"createdAt\": 1699999999999\n  }\n}"
+            },
+            {
+              "name": "Error - Invalid Discount",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"invalid_discount\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rules Engine",
+      "description": "Insurance applicant evaluation rules engine",
+      "item": [
+        {
+          "name": "Evaluate Applicant - Employee Approved",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Employee\",\n  \"dob\": \"1990-05-15\",\n  \"heightCm\": 175,\n  \"weightKg\": 60,\n  \"address\": {\n    \"state\": \"CA\",\n    \"city\": \"Los Angeles\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rules/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rules", "evaluate"]
+            },
+            "description": "Evaluates an insurance applicant based on the configured rules.\n\n**Rules Applied:**\n1. Employee gets products: Alpha, Beta, Gamma\n2. Age check: Employee > 80 = decline\n3. BMI check: BMI > 20 = decline\n4. State-based gender options"
+          },
+          "response": [
+            {
+              "name": "Employee Approved",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"productsShown\": [\"Alpha\", \"Beta\", \"Gamma\"],\n  \"decision\": \"approve\",\n  \"genderOptions\": [\"Male\", \"Female\"],\n  \"age\": 34\n}"
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Applicant - Employee Declined (Age)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Employee\",\n  \"age\": 85,\n  \"heightCm\": 170,\n  \"weightKg\": 55,\n  \"address\": {\n    \"state\": \"TX\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rules/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rules", "evaluate"]
+            },
+            "description": "Example: Employee over 80 years old is declined"
+          },
+          "response": [
+            {
+              "name": "Employee Declined - Age",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"productsShown\": [\"Alpha\", \"Beta\", \"Gamma\"],\n  \"decision\": \"decline\",\n  \"genderOptions\": [\"Male\", \"Female\"],\n  \"age\": 85\n}"
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Applicant - Spouse with Nonbinary Option",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Spouse\",\n  \"dob\": \"1985-03-20\",\n  \"heightCm\": 165,\n  \"weightKg\": 50,\n  \"address\": {\n    \"state\": \"NY\",\n    \"city\": \"New York\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rules/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rules", "evaluate"]
+            },
+            "description": "Example: Spouse in NY state gets Nonbinary gender option"
+          },
+          "response": [
+            {
+              "name": "Spouse Approved with Nonbinary",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"productsShown\": [\"Delta\", \"Epsilon\"],\n  \"decision\": \"approve\",\n  \"genderOptions\": [\"Male\", \"Female\", \"Nonbinary\"],\n  \"age\": 39\n}"
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Applicant - BMI Decline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Employee\",\n  \"age\": 35,\n  \"heightCm\": 170,\n  \"weightKg\": 80,\n  \"address\": {\n    \"state\": \"FL\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rules/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rules", "evaluate"]
+            },
+            "description": "Example: Applicant with BMI > 20 is declined"
+          },
+          "response": [
+            {
+              "name": "Declined - High BMI",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"productsShown\": [\"Alpha\", \"Beta\", \"Gamma\"],\n  \"decision\": \"decline\",\n  \"genderOptions\": [\"Male\", \"Female\", \"Nonbinary\"],\n  \"age\": 35\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Complete Flow Example",
+      "description": "Step-by-step flow to demonstrate the complete discount functionality",
+      "item": [
+        {
+          "name": "Step 1: Reset State",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reset"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2: Order 1 - Add & Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Item 1\",\n  \"price\": 50,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/order1/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "order1", "items"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2b: Checkout Order 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/order1",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "order1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 3: Order 2 - Add & Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Item 2\",\n  \"price\": 75,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/order2/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "order2", "items"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 3b: Checkout Order 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/order2",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "order2"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 4: Order 3 - Add & Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Item 3\",\n  \"price\": 100,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/order3/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "order3", "items"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 4b: Checkout Order 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/order3",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "order3"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 5: Generate Discount (Now Available!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('discountCode', jsonData.discount.code);",
+                  "console.log('Discount code:', jsonData.discount.code);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/discounts/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "discounts", "generate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 6: Add Item for Discount Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Discount Item\",\n  \"price\": 200,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/discountUser/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "discountUser", "items"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 7: Checkout with Discount (10% off!)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountCode\": \"{{discountCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/discountUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "discountUser"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 8: Verify Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

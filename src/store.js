@@ -40,6 +40,29 @@ function getCart(userId) {
   return state.carts.get(userId) || []
 }
 
+function removeFromCart(userId, itemId) {
+  const cart = state.carts.get(userId) || []
+  const index = cart.findIndex(item => item.id === itemId)
+  if (index === -1) throw new Error('item_not_found')
+  cart.splice(index, 1)
+  state.carts.set(userId, cart)
+  return cart
+}
+
+function updateCartItem(userId, itemId, updates) {
+  const cart = state.carts.get(userId) || []
+  const item = cart.find(item => item.id === itemId)
+  if (!item) throw new Error('item_not_found')
+  if (updates.quantity !== undefined) {
+    if (!Number.isInteger(updates.quantity) || updates.quantity <= 0) {
+      throw new Error('invalid_quantity')
+    }
+    item.quantity = updates.quantity
+  }
+  state.carts.set(userId, cart)
+  return cart
+}
+
 function clearCart(userId) {
   state.carts.delete(userId)
 }
@@ -95,4 +118,4 @@ function stats() {
   }
 }
 
-module.exports = { state, setN, reset, addToCart, getCart, checkout, canGenerateDiscount, generateDiscount, stats }
+module.exports = { state, setN, reset, addToCart, getCart, removeFromCart, updateCartItem, checkout, canGenerateDiscount, generateDiscount, stats }
