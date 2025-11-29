@@ -60,8 +60,8 @@ app.post('/checkout/:userId', (req, res) => {
 
 app.post('/admin/discounts/generate', (req, res) => {
   try {
-    if (!canGenerateDiscount()) return res.status(400).json({ error: 'not_available' })
-    const discount = generateDiscount()
+    if (!canGenerateDiscount(true)) return res.status(400).json({ error: 'not_available' })
+    const discount = generateDiscount(true)
     res.status(201).json({ discount })
   } catch (e) {
     if (e.message === 'cannot_generate') return res.status(400).json({ error: 'not_available' })

@@ -71,14 +71,15 @@ function findActiveUnusedDiscount() {
   return state.discounts.find(d => d.used === false) || null
 }
 
-function canGenerateDiscount() {
+function canGenerateDiscount(isAdmin = false) {
   const active = findActiveUnusedDiscount()
   if (active) return false
+  if (isAdmin) return true
   return state.orders.length >= state.nextThreshold
 }
 
-function generateDiscount() {
-  if (!canGenerateDiscount()) throw new Error('cannot_generate')
+function generateDiscount(isAdmin = false) {
+  if (!canGenerateDiscount(isAdmin)) throw new Error('cannot_generate')
   const code = `CODE-${uuidv4().slice(0, 8).toUpperCase()}`
   const discount = { code, percentage: 0.10, used: false, generatedAtOrderCount: state.orders.length }
   state.discounts.push(discount)
