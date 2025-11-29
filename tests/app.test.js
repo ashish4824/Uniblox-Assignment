@@ -51,18 +51,14 @@ test('stats show purchases and discounts', async () => {
 })
 
 test('remove item from cart', async () => {
-  // Add item to cart
   const addRes = await request(app).post('/cart/u1/items').send({ name: 'Alpha', price: 100, quantity: 2 }).expect(201)
   const itemId = addRes.body.cart[0].id
 
-  // Verify item is in cart
   let cartRes = await request(app).get('/cart/u1').expect(200)
   expect(cartRes.body.cart.length).toBe(1)
 
-  // Remove item
   await request(app).delete(`/cart/u1/items/${itemId}`).expect(200)
 
-  // Verify cart is empty
   cartRes = await request(app).get('/cart/u1').expect(200)
   expect(cartRes.body.cart.length).toBe(0)
 })
@@ -73,25 +69,20 @@ test('remove non-existent item returns 404', async () => {
 })
 
 test('update item quantity in cart', async () => {
-  // Add item to cart
   const addRes = await request(app).post('/cart/u1/items').send({ name: 'Alpha', price: 100, quantity: 2 }).expect(201)
   const itemId = addRes.body.cart[0].id
 
-  // Update quantity
   const updateRes = await request(app).patch(`/cart/u1/items/${itemId}`).send({ quantity: 5 }).expect(200)
   expect(updateRes.body.cart[0].quantity).toBe(5)
 
-  // Verify in cart
   const cartRes = await request(app).get('/cart/u1').expect(200)
   expect(cartRes.body.cart[0].quantity).toBe(5)
 })
 
 test('update with invalid quantity returns 400', async () => {
-  // Add item to cart
   const addRes = await request(app).post('/cart/u1/items').send({ name: 'Alpha', price: 100, quantity: 2 }).expect(201)
   const itemId = addRes.body.cart[0].id
 
-  // Try to update with invalid quantity
   const res = await request(app).patch(`/cart/u1/items/${itemId}`).send({ quantity: -1 }).expect(400)
   expect(res.body.error).toBe('invalid_quantity')
 })
@@ -102,15 +93,12 @@ test('checkout with empty cart returns 400', async () => {
 })
 
 test('add invalid item returns 400', async () => {
-  // Missing price
   let res = await request(app).post('/cart/u1/items').send({ name: 'Alpha', quantity: 2 }).expect(400)
   expect(res.body.error).toBe('invalid_item')
 
-  // Invalid price
   res = await request(app).post('/cart/u1/items').send({ name: 'Alpha', price: -10, quantity: 2 }).expect(400)
   expect(res.body.error).toBe('invalid_item')
 
-  // Invalid quantity
   res = await request(app).post('/cart/u1/items').send({ name: 'Alpha', price: 100, quantity: 0 }).expect(400)
   expect(res.body.error).toBe('invalid_item')
 })

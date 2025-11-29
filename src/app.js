@@ -5,13 +5,10 @@ const { addToCart, getCart, removeFromCart, updateCartItem, checkout, canGenerat
 
 const app = express()
 
-// Enable CORS for all origins (development)
 app.use(cors())
 
-// Parse JSON bodies
 app.use(express.json())
 
-// Serve static files for the UI
 app.use(express.static(path.join(__dirname, '../public')))
 
 app.post('/cart/:userId/items', (req, res) => {
